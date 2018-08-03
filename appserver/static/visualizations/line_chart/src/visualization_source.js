@@ -43,27 +43,12 @@ define([
 
           // get data
           //var dataRows = data.results;
-          if(isNaN(this.offset)){
-            this.offset = 0;
-            this.chunk = 50000;
-          }
+
            // print the data object returned by Splunk
            console.log('Data:',data);
 
            // Create a global variable so we can work with the array in the console.
-           window.data1 = data;
-
-           console.log(this.offset);
-           // ... the fields child object (array), element zero, name attribute
-           console.log('Name:', data.fields[0].name,data.fields[0].type);
-           // is "data" an array?
-           console.log(Array.isArray(data));
-           // is data.rows an array?
-           console.log(Array.isArray(data.rows));
-
-
-
-
+           //window.data1 = data
 
            // this function extracts a column of an array
            function arrayColumn(arr, n) {
@@ -85,7 +70,7 @@ define([
             }
 
             console.log(dataArray);
-            console.log('Tyler');
+            //console.log('Tyler');
 
 
         // Get back the first column in the array into a new 1-dimensional array (for now)
@@ -108,9 +93,6 @@ define([
         //console.log(Array.isArray(data1));
 
         //if ($('#lineChartContainer').has('svg').length != 99) {
-        if (typeof window.c3chart === "undefined"){
-          console.log('Chart does NOT exist');
-
            c3.generate({
                bindto: '#lineChartContainer',
                 data: {
@@ -119,25 +101,23 @@ define([
                 },
                 subchart: {
                    show: true
-               },
-               axis: {
+               }
+               // you need to detect time-series and optionally add this in
+               // splunk date 2018-08-03T10:05:36.000-04:00
+
+               ,axis: {
                     x: {
                         type: 'timeseries',
                         tick: {
-                            format: '%Y-%m-%d'
+                            //format: '%Y-%m-%dT%H:%M:%S.%L%Z'
+                            format: '%Y-%m'
                         }
                     }
                 }
+
             });
 
-        }else {
-          console.log('Chart DOES exist');
-          window.c3chart.chart1.flow({
-            columns: [
-              data1
-            ]
-          });
-        }
+
 
 /*
         this.offset += data.rows.length;
