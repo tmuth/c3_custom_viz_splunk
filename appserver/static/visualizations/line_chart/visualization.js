@@ -78,7 +78,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        },
 
 	        updateView: function(data, config) {
-	          //foo.x = "bar";
 
 	          if(data.rows.length < 1){
 	              return;
@@ -100,6 +99,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              return arr.map(x=> x[n]);
 	            }
 
+	            function parseDateColumn(arr) {
+	               return arr.map(x=> Date.parse(x));
+	             }
+
 	            var dataArray=[];
 
 	            for (i in data.fields) {
@@ -107,6 +110,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                  console.log(data.fields[i]);
 	                  // call arrayColumn with data1.rows[i] and assign to temp array
 	                  var tmpArray = arrayColumn(data.rows,i);
+	                  if(data.fields[i].name=='_time'){
+	                    tmpArray = parseDateColumn(tmpArray);
+	                  }
 	                  // prepend data1.fields[i].name
 	                  tmpArray=[data.fields[i].name, ...tmpArray];
 	                  // push that array into dataArray so we end up with an array of arrays
@@ -136,6 +142,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        //console.log(data1);
 
 	        //console.log(Array.isArray(data1));
+	        var xAxisType = 'indexed'; //indexed|category|timeseries
+	        if(data.fields[0].name=='_time'){
+	          xAxisType = 'timeseries';
+	        }
 
 	        //if ($('#lineChartContainer').has('svg').length != 99) {
 	           c3.generate({
@@ -152,10 +162,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	               ,axis: {
 	                    x: {
-	                        type: 'timeseries',
+	                        type: xAxisType,
 	                        tick: {
-	                            //format: '%Y-%m-%dT%H:%M:%S.%L%Z'
-	                            format: '%Y-%m'
+	                            format: '%Y-%m-%d %H:%M'
+	                            //format: '%Y-%m'
 	                        }
 	                    }
 	                }
