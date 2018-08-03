@@ -33,7 +33,6 @@ define([
         },
 
         updateView: function(data, config) {
-          //foo.x = "bar";
 
           if(data.rows.length < 1){
               return;
