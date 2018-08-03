@@ -1,0 +1,11 @@
+| makeresults count=10
+| streamstats count as x
+| eval y=random() %100, z=random() %100
+| fields _time,x,y,z
+| fields - _time
+
+
+| makeresults count=10
+| streamstats count as x
+| eval y=random() %100, z=random() %100
+| fields _time,x,y,z

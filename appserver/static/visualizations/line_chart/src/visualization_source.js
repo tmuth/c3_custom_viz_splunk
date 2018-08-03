@@ -1,0 +1,161 @@
+define([
+            'jquery',
+            'underscore',
+            'api/SplunkVisualizationBase',
+            'api/SplunkVisualizationUtils',
+            'd3',
+            'c3'
+        ],
+        function(
+            $,
+            _,
+            SplunkVisualizationBase,
+            SplunkVisualizationUtils,
+            d3,
+            c3
+        ) {
+
+    return SplunkVisualizationBase.extend({
+
+        initialize: function() {
+            // Save this.$el for convenience
+            this.$el = $(this.el);
+
+            // Add a css selector class
+            this.$el.attr('id','lineChartContainer');
+        },
+
+        getInitialDataParams: function() {
+            return ({
+                outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
+                count: 10000
+            });
+        },
+
+        updateView: function(data, config) {
+          //foo.x = "bar";
+
+          if(data.rows.length < 1){
+              return;
+          }
+
+          $('#lineChartContainer').empty();
+
+          // get data
+          //var dataRows = data.results;
+          if(isNaN(this.offset)){
+            this.offset = 0;
+            this.chunk = 50000;
+          }
+           // print the data object returned by Splunk
+           console.log('Data:',data);
+
+           // Create a global variable so we can work with the array in the console.
+           window.data1 = data;
+
+           console.log(this.offset);
+           // ... the fields child object (array), element zero, name attribute
+           console.log('Name:', data.fields[0].name,data.fields[0].type);
+           // is "data" an array?
+           console.log(Array.isArray(data));
+           // is data.rows an array?
+           console.log(Array.isArray(data.rows));
+
+
+
+
+
+           // this function extracts a column of an array
+           function arrayColumn(arr, n) {
+              return arr.map(x=> x[n]);
+            }
+
+            var dataArray=[];
+
+            for (i in data.fields) {
+                if(data.fields[i].name){
+                  console.log(data.fields[i]);
+                  // call arrayColumn with data1.rows[i] and assign to temp array
+                  var tmpArray = arrayColumn(data.rows,i);
+                  // prepend data1.fields[i].name
+                  tmpArray=[data.fields[i].name, ...tmpArray];
+                  // push that array into dataArray so we end up with an array of arrays
+                  dataArray.push(tmpArray);
+                }
+            }
+
+            console.log(dataArray);
+            console.log('Tyler');
+
+
+        // Get back the first column in the array into a new 1-dimensional array (for now)
+        //var data1 = arrayColumn(data.rows, 0);
+        // all elements come out wrapped in quotes which are text so convert to numbers
+        // but it appears we don't need to do this
+        //var data1=data1.map(Number);
+
+        //console.log(data1);
+        // get the column name from data and prepend it to the array as this is what C3 expects:
+        // https://c3js.org/reference.html#data-columns
+        //data1=data1.unshift(data.fields[0].name);
+
+        ///console.log([data.fields[0].name, ...data1]);
+        // Extract the field name for column 0 and glue it onto the beginning of the array
+        //data1=[data.fields[0].name, ...data1]
+
+        //console.log(data1);
+
+        //console.log(Array.isArray(data1));
+
+        //if ($('#lineChartContainer').has('svg').length != 99) {
+        if (typeof window.c3chart === "undefined"){
+          console.log('Chart does NOT exist');
+
+           c3.generate({
+               bindto: '#lineChartContainer',
+                data: {
+                    x: data.fields[0].name,
+                    columns: dataArray
+                },
+                subchart: {
+                   show: true
+               },
+               axis: {
+                    x: {
+                        type: 'timeseries',
+                        tick: {
+                            format: '%Y-%m-%d'
+                        }
+                    }
+                }
+            });
+
+        }else {
+          console.log('Chart DOES exist');
+          window.c3chart.chart1.flow({
+            columns: [
+              data1
+            ]
+          });
+        }
+
+/*
+        this.offset += data.rows.length;
+
+                        setTimeout(function(that) {
+                            that.updateDataParams({count: that.chunk, offset: that.offset});
+                        }, 100, this);
+*/
+/*
+           chart.flow({
+             columns: [
+               ['data1', 500, 200],
+               ['data2', 100, 300],
+               ['data3', 200, 120]
+             ]
+           });
+
+*/
+       }
+    });
+});
