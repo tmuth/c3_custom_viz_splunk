@@ -33,7 +33,6 @@ define([
         },
 
         updateView: function(data, config) {
-          //foo.x = "bar";
 
           if(data.rows.length < 1){
               return;
@@ -55,6 +54,10 @@ define([
               return arr.map(x=> x[n]);
             }
 
+            function parseDateColumn(arr) {
+               return arr.map(x=> Date.parse(x));
+             }
+
             var dataArray=[];
 
             for (i in data.fields) {
@@ -62,6 +65,9 @@ define([
                   console.log(data.fields[i]);
                   // call arrayColumn with data1.rows[i] and assign to temp array
                   var tmpArray = arrayColumn(data.rows,i);
+                  if(data.fields[i].name=='_time'){
+                    tmpArray = parseDateColumn(tmpArray);
+                  }
                   // prepend data1.fields[i].name
                   tmpArray=[data.fields[i].name, ...tmpArray];
                   // push that array into dataArray so we end up with an array of arrays
@@ -70,7 +76,7 @@ define([
             }
 
             console.log(dataArray);
-            //console.log('Tyler');
+            console.log('Tyler');
 
 
         // Get back the first column in the array into a new 1-dimensional array (for now)
@@ -91,26 +97,55 @@ define([
         //console.log(data1);
 
         //console.log(Array.isArray(data1));
+        var xAxisType = 'indexed'; //indexed|category|timeseries
+        if(data.fields[0].name=='_time'){
+          xAxisType = 'timeseries';
+        }
+
+
+        var sSearches = 'display.visualizations.custom.c3_custom_viz_app.spline.'
+
+        rotate = config[sSearches + 'rotate_Angle'] || 0,
+
+        showXLabel = (config[sSearches + 'xDisplay'] === 'true'),
+        showYLabel = (config[sSearches + 'yDisplay'] === 'true'),
+        rSlider = (config[sSearches + 'showRSlider'] === 'true'),
+
+        dispHigh = (config[sSearches + 'showHigh'] === 'true'),
+        dispLow = (config[sSearches + 'showLow'] === 'true'),
+
+        tHighCol = config[sSearches + 'thColor'] || '#1556C5',
+        tLowCol = config[sSearches + 'tlColor'] || '#FFA500',
+
+        dispLegend = (config[sSearches + 'showLegend'] === 'true') || 'true',
+
+        typeChart = config[sSearches + 'chartType'] || 'spline'
+
+        incColor = config[sSearches + 'highColor'],
+        decColor = config[sSearches + 'lowColor'];
+
 
         //if ($('#lineChartContainer').has('svg').length != 99) {
            c3.generate({
                bindto: '#lineChartContainer',
                 data: {
                     x: data.fields[0].name,
-                    columns: dataArray
+                    columns: dataArray,
+                    // make this a config variable and all the user to choose line | spline | step
+                    type: 'spline' // change to 'step' or 'line' to change chart type
                 },
                 subchart: {
-                   show: true
+                   show: false
                }
                // you need to detect time-series and optionally add this in
                // splunk date 2018-08-03T10:05:36.000-04:00
 
                ,axis: {
                     x: {
-                        type: 'timeseries',
+                        type: xAxisType,
                         tick: {
-                            //format: '%Y-%m-%dT%H:%M:%S.%L%Z'
-                            format: '%Y-%m'
+                            format: '%Y-%m-%d %H:%M'
+                            //format: '%Y-%m'
                         }
                     }
                 }
